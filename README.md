@@ -36,6 +36,29 @@ If there is any question, please contact me at memochou1993@gmail.com. Thank you
 
 Detailed changes for each release are documented in the [release notes](https://github.com/memochou1993/gpt-ai-assistant/releases).
 
+## Taiwan Stock Analysis
+
+The LINE webhook can return a short link to a Taiwan stock analysis dashboard.
+Supported message formats include:
+
+```text
+2330
+股票 台積電
+stock: 2317
+鴻海 股票分析
+```
+
+The analysis page is served from `/stock/<code-or-name>` and uses public TWSE,
+TPEx, Goodinfo.tw, and MOPS sources. The page is for research only and does not
+provide buy, sell, or hold recommendations.
+
+Vercel automatically supplies `VERCEL_URL` for the LINE reply link. To use a
+stable custom or production domain, set this optional environment variable:
+
+```text
+STOCK_ANALYSIS_BASE_URL=https://your-project.vercel.app
+```
+
 ## License
 
 [MIT](LICENSE)
