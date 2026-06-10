@@ -10,6 +10,7 @@ import enquireHandler from './enquire.js';
 import reportHandler from './report.js';
 import retryHandler from './retry.js';
 import searchHandler from './search.js';
+import stockHandler from './stock.js';
 import talkHandler from './talk.js';
 import versionHandler from './version.js';
 
@@ -26,6 +27,7 @@ export {
   reportHandler,
   retryHandler,
   searchHandler,
+  stockHandler,
   talkHandler,
   versionHandler,
 };
