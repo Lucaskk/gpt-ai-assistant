@@ -1,4 +1,5 @@
-import config from '../../config/index.js';
+import { queueStockAnalysis, stockAnalysisUrl } from '../../services/stock-requests.js';
+import { resolveStock } from '../../services/stock.js';
 import Context from '../context.js';
 
 const parseStockRequest = (text) => {
@@ -11,10 +12,18 @@ const parseStockRequest = (text) => {
   return null;
 };
 
-const stockAnalysisBaseUrl = () => {
-  if (config.STOCK_ANALYSIS_BASE_URL) return config.STOCK_ANALYSIS_BASE_URL.replace(/\/$/, '');
-  if (config.VERCEL_URL) return `https://${config.VERCEL_URL}`;
-  return 'http://localhost:3000';
+const handleStockRequest = async (context, query) => {
+  const stock = /^\d{4}$/.test(query)
+    ? { code: query, name: '' }
+    : await resolveStock(query);
+  try {
+    await queueStockAnalysis(stock);
+  } catch (error) {
+    console.error(`Unable to queue stock ${stock.code}: ${error.message}`);
+  }
+  const label = stock.name ? `${stock.name}(${stock.code})` : `${stock.code} 股票`;
+  context.pushText(`${label}分析連結\n${stockAnalysisUrl(stock)}\n通常 15 分鐘內更新；僅供研究參考。`);
+  return context;
 };
 
 /**
@@ -24,14 +33,12 @@ const stockAnalysisBaseUrl = () => {
 const exec = (context) => {
   const query = parseStockRequest(context.trimmedText);
   if (!query) return false;
-  const url = `${stockAnalysisBaseUrl()}/stock/${encodeURIComponent(query)}`;
-  context.pushText(`股票分析連結\n${url}\n僅供研究參考，非投資建議。`);
-  return Promise.resolve(context);
+  return handleStockRequest(context, query);
 };
 
 export {
   parseStockRequest,
-  stockAnalysisBaseUrl,
+  handleStockRequest,
 };
 
 export default exec;

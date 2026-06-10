@@ -48,15 +48,20 @@ stock: 2317
 鴻海 股票分析
 ```
 
-The analysis page is served from `/stock/<code-or-name>` and uses public TWSE,
-TPEx, Goodinfo.tw, and MOPS sources. The page is for research only and does not
-provide buy, sell, or hold recommendations.
+Vercel only resolves the stock and writes a small request file to the
+`Lucaskk/daily-news` repository. A Mac scheduler runs the Python analysis,
+publishes static HTML to GitHub Pages, and preserves the previous successful
+page if a data source is temporarily unavailable.
 
 Vercel automatically supplies `VERCEL_URL` for the LINE reply link. To use a
 stable custom or production domain, set this optional environment variable:
 
 ```text
-STOCK_ANALYSIS_BASE_URL=https://your-project.vercel.app
+STOCK_ANALYSIS_BASE_URL=https://lucaskk.github.io/daily-news/wiki/stocks/pending.html
+STOCK_REQUEST_GITHUB_TOKEN=github_pat_with_contents_write_access
+STOCK_REQUEST_REPOSITORY=Lucaskk/daily-news
+STOCK_REQUEST_BRANCH=main
+STOCK_REQUEST_QUEUE_PATH=wiki/stocks/requests
 ```
 
 ## License

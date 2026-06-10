@@ -3,8 +3,8 @@ import { handleEvents, printPrompts } from '../app/index.js';
 import config from '../config/index.js';
 import { validateLineSignature } from '../middleware/index.js';
 import storage from '../storage/index.js';
-import { getStockAnalysis } from '../services/stock.js';
-import { renderStockAnalysis, renderStockError } from '../app/views/stock.js';
+import { queueStockAnalysis, stockAnalysisUrl } from '../services/stock-requests.js';
+import { resolveStock } from '../services/stock.js';
 import { fetchVersion, getVersion } from '../utils/index.js';
 
 const app = express();
@@ -31,12 +31,12 @@ app.get('/info', async (req, res) => {
 
 app.get('/stock/:query', async (req, res) => {
   try {
-    const analysis = await getStockAnalysis(req.params.query);
-    res.set('Cache-Control', 'public, s-maxage=900, stale-while-revalidate=86400');
-    res.status(200).send(renderStockAnalysis(analysis));
+    const stock = await resolveStock(req.params.query);
+    await queueStockAnalysis(stock);
+    res.redirect(302, stockAnalysisUrl(stock));
   } catch (err) {
     console.error(err.message);
-    res.status(503).send(renderStockError(err.message));
+    res.status(404).send(err.message);
   }
 });
 
