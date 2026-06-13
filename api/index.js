@@ -32,8 +32,8 @@ app.get('/info', async (req, res) => {
 app.get('/stock/:query', async (req, res) => {
   try {
     const stock = await resolveStock(req.params.query);
-    await queueStockAnalysis(stock);
-    res.redirect(302, stockAnalysisUrl(stock));
+    const requestedAt = await queueStockAnalysis(stock);
+    res.redirect(302, stockAnalysisUrl(stock, requestedAt || ''));
   } catch (err) {
     console.error(err.message);
     res.status(404).send(err.message);
