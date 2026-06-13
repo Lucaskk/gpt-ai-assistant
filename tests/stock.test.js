@@ -24,4 +24,7 @@ test('builds the GitHub Pages waiting link', () => {
   expect(stockAnalysisUrl({ code: '2330', name: '台積電' })).toBe(
     'https://lucaskk.github.io/daily-news/wiki/stocks/pending.html?code=2330&name=%E5%8F%B0%E7%A9%8D%E9%9B%BB',
   );
+  expect(stockAnalysisUrl({ code: '2344', name: '華邦電' }, '2026-06-13T01:49:00.000Z')).toBe(
+    'https://lucaskk.github.io/daily-news/wiki/stocks/pending.html?code=2344&name=%E8%8F%AF%E9%82%A6%E9%9B%BB&requested_at=2026-06-13T01%3A49%3A00.000Z',
+  );
 });
