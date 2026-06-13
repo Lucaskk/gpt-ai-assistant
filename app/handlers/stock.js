@@ -16,13 +16,14 @@ const handleStockRequest = async (context, query) => {
   const stock = /^\d{4}$/.test(query)
     ? { code: query, name: '' }
     : await resolveStock(query);
+  let requestedAt = '';
   try {
-    await queueStockAnalysis(stock);
+    requestedAt = await queueStockAnalysis(stock) || '';
   } catch (error) {
     console.error(`Unable to queue stock ${stock.code}: ${error.message}`);
   }
   const label = stock.name ? `${stock.name}(${stock.code})` : `${stock.code} 股票`;
-  context.pushText(`${label}分析連結\n${stockAnalysisUrl(stock)}\n通常 15 分鐘內更新；僅供研究參考。`);
+  context.pushText(`${label}分析連結\n${stockAnalysisUrl(stock, requestedAt)}\n通常 15 分鐘內更新；僅供研究參考。`);
   return context;
 };
 
