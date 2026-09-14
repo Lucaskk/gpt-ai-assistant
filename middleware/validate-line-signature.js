@@ -4,6 +4,10 @@ import { validateSignature } from '../utils/index.js';
 const validateLineSignature = (req, res, next) => {
   const secret = config.LINE_CHANNEL_SECRET || '';
   const signature = req.header('x-line-signature');
+  if (!secret || typeof signature !== 'string' || !signature) {
+    res.sendStatus(403);
+    return;
+  }
   if (!validateSignature(req.rawBody, secret, signature)) {
     res.sendStatus(403);
     return;

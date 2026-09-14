@@ -10,6 +10,11 @@ import { fetchVersion, getVersion } from '../utils/index.js';
 
 const app = express();
 
+app.get('/news-command-capability', (req, res) => {
+  res.json({ version: '2026-09-14', command: '重新產出',
+    queueConfigured: Boolean(config.STOCK_REQUEST_GITHUB_TOKEN), mode: 'diagnose-only' });
+});
+
 app.use(express.json({
   verify: (req, res, buf) => {
     req.rawBody = buf.toString();
