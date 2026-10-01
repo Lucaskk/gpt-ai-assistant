@@ -6,6 +6,7 @@ import storage from '../storage/index.js';
 import { queueStockAnalysis, stockAnalysisUrl } from '../services/stock-requests.js';
 import { resolveStock } from '../services/stock.js';
 import { isNewsCommand, queueNewsCommand } from '../services/news-requests.js';
+import { isSourceCommand, queueSourceCommand } from '../services/source-requests.js';
 import { fetchVersion, getVersion } from '../utils/index.js';
 
 const app = express();
@@ -51,6 +52,7 @@ app.post(config.APP_WEBHOOK_PATH, validateLineSignature, async (req, res) => {
     const remaining = [];
     for (const event of req.body.events || []) {
       if (isNewsCommand(event)) await queueNewsCommand(event, config.STOCK_REQUEST_GITHUB_TOKEN);
+      else if (isSourceCommand(event)) await queueSourceCommand(event, config.STOCK_REQUEST_GITHUB_TOKEN);
       else remaining.push(event);
     }
     if (!remaining.length) { res.sendStatus(200); return; }
