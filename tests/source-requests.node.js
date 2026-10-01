@@ -31,3 +31,15 @@ test('ignores unauthorized users and unsafe URLs before network', async () => {
   await queueSourceCommand({ ...event, message: { type: 'text', text: '加入網址 http://example.com' } },
     'token', noNetwork, now, owner);
 });
+
+test('queues 查看網址 without requiring or storing a URL', async () => {
+  const listing = { ...event, message: { type: 'text', text: ' 查看網址 ' } };
+  assert.equal(isSourceCommand(listing), true);
+  let payload;
+  await queueSourceCommand(listing, 'token', async (_, options) => {
+    payload = JSON.parse(Buffer.from(JSON.parse(options.body).content, 'base64').toString());
+    return { ok: true };
+  }, now, owner);
+  assert.equal(payload.action, 'list_sources');
+  assert.equal(Object.hasOwn(payload, 'url'), false);
+});
