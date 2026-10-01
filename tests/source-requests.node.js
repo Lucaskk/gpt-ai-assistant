@@ -43,3 +43,17 @@ test('queues 查看網址 without requiring or storing a URL', async () => {
   assert.equal(payload.action, 'list_sources');
   assert.equal(Object.hasOwn(payload, 'url'), false);
 });
+
+test('增加網址 and 新增網址 use the source queue instead of chat', async () => {
+  for (const command of ['增加網址', '新增網址', '加入網址']) {
+    const input = { ...event, message: { type: 'text', text: `${command} https://technews.tw` } };
+    assert.equal(isSourceCommand(input), true);
+    let payload;
+    await queueSourceCommand(input, 'token', async (_, options) => {
+      payload = JSON.parse(Buffer.from(JSON.parse(options.body).content, 'base64').toString());
+      return { ok: true };
+    }, now, owner);
+    assert.equal(payload.action, 'add_source');
+    assert.equal(payload.url, 'https://technews.tw/');
+  }
+});

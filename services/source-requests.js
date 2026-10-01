@@ -2,10 +2,10 @@ import { createHash } from 'node:crypto';
 
 const ownerHash = 'e6f6b73a3d19e73357dfbefea5c1e4e2b20461995f650db2fd4623321d2fdc49';
 const hash = (value) => createHash('sha256').update(value).digest('hex');
-const pattern = /^加入網址\s*(https:\/\/\S+)\s*$/u;
+const pattern = /^(?:加入|增加|新增)網址\s*(https:\/\/\S+)\s*$/u;
 export const isSourceCommand = (event) => event?.type === 'message'
   && event.message?.type === 'text' && (event.message.text.trim() === '查看網址'
-    || /^加入網址(?:\s|https:\/\/)/u.test(event.message.text.trim()));
+    || /^(?:加入|增加|新增)網址(?:\s|https:\/\/)/u.test(event.message.text.trim()));
 
 export async function queueSourceCommand(event, token, fetcher = fetch, now = Date.now(), authorizedHash = ownerHash) {
   if (!isSourceCommand(event)) return false;
