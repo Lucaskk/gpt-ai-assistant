@@ -7,7 +7,7 @@ export const isSourceCommand = (event) => event?.type === 'message'
   && event.message?.type === 'text' && (event.message.text.trim() === '查看網址'
     || /^(?:加入|增加|新增)網址(?:\s|https:\/\/)/u.test(event.message.text.trim()));
 
-export async function queueSourceCommand(event, token, fetcher = fetch, now = Date.now(), authorizedHash = ownerHash) {
+export async function queueSourceCommand(event, token, fetcher = fetch, now = Date.now(), authorizedHash = ownerHash, onQueued = async () => {}) {
   if (!isSourceCommand(event)) return false;
   if (event.source?.type !== 'user' || typeof event.source.userId !== 'string'
       || hash(event.source.userId) !== authorizedHash) return true;
@@ -38,7 +38,12 @@ export async function queueSourceCommand(event, token, fetcher = fetch, now = Da
   const result = await fetcher(endpoint, { method: 'PUT', headers, signal: AbortSignal.timeout(8000),
     body: JSON.stringify({ message: `Queue source URL ${date}`, branch: 'main',
       content: Buffer.from(`${JSON.stringify(request)}\n`).toString('base64') }) });
-  if (result.ok) return true;
+  if (result.ok) {
+    await onQueued(list
+      ? '已收到「查看網址」。本機每 15 分鐘處理一次，完成後會傳送網址清單。'
+      : `已收到加入網址：${url.toString()}\n本機每 15 分鐘處理一次，完成後會通知新增結果。`);
+    return true;
+  }
   if (result.status === 422) {
     const existing = await fetcher(`${endpoint}?ref=main`, { headers, signal: AbortSignal.timeout(8000) });
     if (existing.ok) {

@@ -57,3 +57,31 @@ test('增加網址 and 新增網址 use the source queue instead of chat', async
     assert.equal(payload.url, 'https://technews.tw/');
   }
 });
+
+
+test('acknowledges accepted requests only after the queue write succeeds', async () => {
+  let written = false; const messages = [];
+  const acknowledge = async (text) => { assert.equal(written, true); messages.push(text); };
+  await queueSourceCommand(event, 'token', async () => { written = true; return { ok: true }; },
+    now, owner, acknowledge);
+  assert.match(messages[0], /已收到加入網址：https:\/\/example.com\/news/);
+  assert.match(messages[0], /15 分鐘/);
+  await queueSourceCommand({ ...event, message: { type: 'text', text: '查看網址' } },
+    'token', async () => ({ ok: true }), now, owner, acknowledge);
+  assert.match(messages[1], /已收到「查看網址」/);
+  await queueSourceCommand(event, 'token', () => { throw new Error('unexpected network'); },
+    now, undefined, acknowledge);
+  assert.equal(messages.length, 2);
+  await assert.rejects(queueSourceCommand(event, 'token', async () => ({ ok: false, status: 500 }),
+    now, owner, acknowledge), /HTTP 500/);
+  assert.equal(messages.length, 2);
+});
+
+test('duplicate webhook requests do not repeat the acknowledgement', async () => {
+  const previous = { event_key: createHash('sha256').update(event.webhookEventId).digest('hex'),
+    action: 'add_source', url: 'https://example.com/news' };
+  await queueSourceCommand(event, 'token', async (_, options) => options.method === 'PUT'
+    ? { ok: false, status: 422 }
+    : { ok: true, json: async () => ({ content: Buffer.from(JSON.stringify(previous)).toString('base64') }) },
+    now, owner, () => { throw new Error('duplicate acknowledgement'); });
+});
